@@ -3,6 +3,7 @@
 #include "util.hh"
 
 #include <arpa/inet.h>
+#include <array>
 #include <cstring>
 #include <memory>
 #include <netdb.h>
@@ -34,7 +35,8 @@ class gai_error_category : public error_category {
     //! The name of the wrapped error
     const char *name() const noexcept override { return "gai_error_category"; }
     //! \brief An error message
-    //! \param[in] return_value the error return value from [getaddrinfo(3)](\ref man3::getaddrinfo)
+    //! \param[in] return_value the error return value from [getaddrinfo(3)](\ref
+    //! man3::getaddrinfo)
     //!                         or [getnameinfo(3)](\ref man3::getnameinfo)
     string message(const int return_value) const noexcept override { return gai_strerror(return_value); }
 };
@@ -57,7 +59,8 @@ Address::Address(const string &node, const string &service, const addrinfo &hint
         throw runtime_error("getaddrinfo returned successfully but with no results");
     }
 
-    // put resolved_address in a wrapper so it will get freed if we have to throw an exception
+    // put resolved_address in a wrapper so it will get freed if we have to throw
+    // an exception
     auto addrinfo_deleter = [](addrinfo *const x) { freeaddrinfo(x); };
     unique_ptr<addrinfo, decltype(addrinfo_deleter)> wrapped_address(resolved_address, move(addrinfo_deleter));
 
@@ -65,9 +68,11 @@ Address::Address(const string &node, const string &service, const addrinfo &hint
     *this = Address(wrapped_address->ai_addr, wrapped_address->ai_addrlen);
 }
 
-//! \brief Build a `struct addrinfo` containing hints for [getaddrinfo(3)](\ref man3::getaddrinfo)
-//! \param[in] ai_flags is the value of the `ai_flags` field in the [struct addrinfo](\ref man3::getaddrinfo)
-//! \param[in] ai_family is the value of the `ai_family` field in the [struct addrinfo](\ref man3::getaddrinfo)
+//! \brief Build a `struct addrinfo` containing hints for [getaddrinfo(3)](\ref
+//! man3::getaddrinfo) \param[in] ai_flags is the value of the `ai_flags` field
+//! in the [struct addrinfo](\ref man3::getaddrinfo) \param[in] ai_family is the
+//! value of the `ai_family` field in the [struct addrinfo](\ref
+//! man3::getaddrinfo)
 static inline addrinfo make_hints(const int ai_flags, const int ai_family) {
     addrinfo hints{};  // value initialized to all zeros
     hints.ai_flags = ai_flags;
