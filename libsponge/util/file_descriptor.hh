@@ -41,7 +41,8 @@ class FileDescriptor {
     //! A reference-counted handle to a shared FDWrapper
     std::shared_ptr<FDWrapper> _internal_fd;
 
-    // private constructor used to duplicate the FileDescriptor (increase the reference count)
+    // private constructor used to duplicate the FileDescriptor (increase the
+    // reference count)
     explicit FileDescriptor(std::shared_ptr<FDWrapper> other_shared_ptr);
 
   protected:
@@ -52,7 +53,8 @@ class FileDescriptor {
     //! Construct from a file descriptor number returned by the kernel
     explicit FileDescriptor(const int fd);
 
-    //! Free the std::shared_ptr; the FDWrapper destructor calls close() when the refcount goes to zero.
+    //! Free the std::shared_ptr; the FDWrapper destructor calls close() when the
+    //! refcount goes to zero.
     ~FileDescriptor() = default;
 
     //! Read up to `limit` bytes
@@ -67,7 +69,8 @@ class FileDescriptor {
     //! Write a string, possibly blocking until all is written
     size_t write(const std::string &str, const bool write_all = true) { return write(BufferViewList(str), write_all); }
 
-    //! Write a buffer (or list of buffers), possibly blocking until all is written
+    //! Write a buffer (or list of buffers), possibly blocking until all is
+    //! written
     size_t write(BufferViewList buffer, const bool write_all = true);
 
     //! Close the underlying file descriptor
@@ -105,12 +108,13 @@ class FileDescriptor {
     FileDescriptor &operator=(const FileDescriptor &other) = delete;  //!< \brief copy assignment is forbidden
     FileDescriptor(FileDescriptor &&other) = default;                 //!< \brief move construction is allowed
     FileDescriptor &operator=(FileDescriptor &&other) = default;      //!< \brief move assignment is allowed
-    //!@}
+                                                                      //!@}
 };
 
 //! \class FileDescriptor
-//! In addition, FileDescriptor tracks EOF state and calls to FileDescriptor::read and
-//! FileDescriptor::write, which EventLoop uses to detect busy loop conditions.
+//! In addition, FileDescriptor tracks EOF state and calls to
+//! FileDescriptor::read and FileDescriptor::write, which EventLoop uses to
+//! detect busy loop conditions.
 //!
 //! For an example of FileDescriptor use, see the EventLoop class documentation.
 

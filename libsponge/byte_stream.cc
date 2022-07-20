@@ -5,10 +5,11 @@
 // For Lab 0, please replace with a real implementation that passes the
 // automated checks run by `make check_lab0`.
 
-// You will need to add private members to the class declaration in `byte_stream.hh`
+// You will need to add private members to the class declaration in
+// `byte_stream.hh`
 
 template <typename... Targs>
-void DUMMY_CODE(Targs &&... /* unused */) {}
+void DUMMY_CODE(Targs &&.../* unused */) {}
 
 using namespace std;
 
