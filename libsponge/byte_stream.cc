@@ -32,6 +32,14 @@ size_t ByteStream::write(const string &data) {
     return write_amount;
 }
 
+bool ByteStream::write_char(char datum) {
+    if (remaining_capacity() == 0)
+        return false;
+    buffer_.push_back(datum);
+    bytes_written_++;
+    return true;
+}
+
 //! \param[in] len bytes will be copied from the output side of the buffer
 string ByteStream::peek_output(const size_t len) const {
     size_t peek_length = len < buffer_size() ? len : buffer_size();

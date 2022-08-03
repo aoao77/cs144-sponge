@@ -38,6 +38,10 @@ class ByteStream {
     //! \returns the number of bytes accepted into the stream
     size_t write(const std::string &data);
 
+    //! Write one character into the stream.
+    //! \returns true if success.
+    bool write_char(char datum);
+
     //! \returns the number of additional bytes that the stream has space for
     size_t remaining_capacity() const;
 
