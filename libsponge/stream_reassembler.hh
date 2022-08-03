@@ -18,8 +18,9 @@ class StreamReassembler {
         char ch = 0;
         bool valid = false;
     };
-    std::vector<Datum> cache_;  // cache to store unassembled data.
-    size_t cache_header_;       // pointer to the begining of the unssembled cache.
+    std::vector<Datum> buffer_;  // buffer to store unassembled data.
+    size_t cache_header_;        // pointer to the begining of the unssembled bytes in
+                                 // buffer.
     size_t unassembled_bytes_;
     size_t eof_byte_;
     bool is_eof_set_;    // true if read the eof
