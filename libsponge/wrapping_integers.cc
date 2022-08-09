@@ -10,9 +10,7 @@ using namespace std;
 //! Transform an "absolute" 64-bit sequence number (zero-indexed) into a
 //! WrappingInt32 \param n The input absolute 64-bit sequence number \param isn
 //! The initial sequence number
-WrappingInt32 wrap(uint64_t n, WrappingInt32 isn) {
-  return WrappingInt32{isn + n};
-}
+WrappingInt32 wrap(uint64_t n, WrappingInt32 isn) { return WrappingInt32{isn + n}; }
 
 //! Transform a WrappingInt32 into an "absolute" 64-bit sequence number
 //! (zero-indexed) \param n The relative sequence number \param isn The initial
@@ -25,8 +23,9 @@ WrappingInt32 wrap(uint64_t n, WrappingInt32 isn) {
 //! ISN, and the other stream runs from the remote TCPSender to the local
 //! TCPReceiver and has a different ISN.
 uint64_t unwrap(WrappingInt32 n, WrappingInt32 isn, uint64_t checkpoint) {
-  uint64_t offset = uint32_t(n - isn);
-  if (checkpoint < offset) return offset;
-  offset += ((checkpoint - offset) >> 32) * (1lu << 32);
-  return checkpoint - offset <= (1lu << 31) ? offset : offset + (1lu << 32);
+    uint64_t offset = uint32_t(n - isn);
+    if (checkpoint < offset)
+        return offset;
+    offset += ((checkpoint - offset) >> 32) * (1lu << 32);
+    return checkpoint - offset <= (1lu << 31) ? offset : offset + (1lu << 32);
 }
