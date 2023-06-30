@@ -11,15 +11,19 @@ void get_URL(const string &host, const string &path) {
     TCPSocket socket = TCPSocket();
     socket.connect(Address{host,"http"});
 
-    string buffer = {"Get " + path + " HTTP/1.1\r\nHost: " + host + "\r\nConnection: close\r\n" };
+    string buffer = {"GET " + path + " HTTP/1.1\r\nHost: " + host + " \r\nConnection: close\r\n\r\n" };
     // cout << buffer << endl;
     socket.write(buffer);
+
+    socket.shutdown(SHUT_WR);
 
     while(!socket.eof()) {
         string recv_buffer = socket.read();
         cout << recv_buffer;
     }
     
+    socket.close();
+
     // You will need to connect to the "http" service on
     // the computer whose name is in the "host" string,
     // then request the URL path given in the "path" string.
