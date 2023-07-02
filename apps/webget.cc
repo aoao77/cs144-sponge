@@ -9,19 +9,19 @@ using namespace std;
 void get_URL(const string &host, const string &path) {
     // Your code here.
     TCPSocket socket = TCPSocket();
-    socket.connect(Address{host,"http"});
+    socket.connect(Address{host, "http"});
 
-    string buffer = {"GET " + path + " HTTP/1.1\r\nHost: " + host + " \r\nConnection: close\r\n\r\n" };
+    string buffer = {"GET " + path + " HTTP/1.1\r\nHost: " + host + " \r\nConnection: close\r\n\r\n"};
     // cout << buffer << endl;
     socket.write(buffer);
 
     socket.shutdown(SHUT_WR);
 
-    while(!socket.eof()) {
+    while (!socket.eof()) {
         string recv_buffer = socket.read();
         cout << recv_buffer;
     }
-    
+
     socket.close();
 
     // You will need to connect to the "http" service on

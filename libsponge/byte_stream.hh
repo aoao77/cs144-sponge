@@ -19,7 +19,8 @@ class ByteStream {
     std::vector<char> pool{};
     size_t start_idx{};
     size_t end_idx{};
-    bool _eof{};  
+    bool _eof{};
+    bool _end_input{};
     bool _error{};  //!< Flag indicating that the stream suffered an error.
 
   public:
