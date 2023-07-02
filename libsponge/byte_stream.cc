@@ -12,42 +12,86 @@ void DUMMY_CODE(Targs &&... /* unused */) {}
 
 using namespace std;
 
-ByteStream::ByteStream(const size_t capacity) { DUMMY_CODE(capacity); }
+ByteStream::ByteStream(const size_t capacity) { 
+    pool.resize(capacity,'\0'); 
+    start_idx = 0;
+    end_idx = 0;
+    _error = false;
+    _eof = false;
+}
 
 size_t ByteStream::write(const string &data) {
-    DUMMY_CODE(data);
-    return {};
+    for (auto &&i : data)
+    {
+        if(remaining_capacity() > 0) {
+            ++end_idx;
+            size_t tar_idx = (end_idx) % pool.size();
+            pool[tar_idx] = i;
+        }
+        else {
+            //error -> full 
+            set_error();
+            break;;
+        }
+    }
 }
 
 //! \param[in] len bytes will be copied from the output side of the buffer
 string ByteStream::peek_output(const size_t len) const {
-    DUMMY_CODE(len);
-    return {};
+    string s;
+    size_t read_num = 0;
+    while (read_num < len)
+    {
+        s.push_back(pool.at((start_idx + read_num++) % pool.size()));
+    }
+    
+    return s;
 }
 
 //! \param[in] len bytes will be removed from the output side of the buffer
-void ByteStream::pop_output(const size_t len) { DUMMY_CODE(len); }
+void ByteStream::pop_output(const size_t len) {
+    start_idx += len;
+}
 
 //! Read (i.e., copy and then pop) the next "len" bytes of the stream
 //! \param[in] len bytes will be popped and returned
 //! \returns a string
 std::string ByteStream::read(const size_t len) {
-    DUMMY_CODE(len);
-    return {};
+    string s;
+    if(len > buffer_size()) {
+        set_error();
+    }
+    else {
+
+        s = peek_output(len);
+        pop_output(len);
+    }
+    
+    return s;
 }
 
-void ByteStream::end_input() {}
+void ByteStream::end_input() {
+    int eof = -1;
+    write(to_string(eof));
+    _eof = true;
+}
 
-bool ByteStream::input_ended() const { return {}; }
+bool ByteStream::input_ended() const { return _eof; }
 
-size_t ByteStream::buffer_size() const { return {}; }
+size_t ByteStream::buffer_size() const {
+    return end_idx + 1 - start_idx;
+}
 
-bool ByteStream::buffer_empty() const { return {}; }
+bool ByteStream::buffer_empty() const { 
+    return start_idx == end_idx;    
+}
 
-bool ByteStream::eof() const { return false; }
+bool ByteStream::eof() const { return _eof; }
 
-size_t ByteStream::bytes_written() const { return {}; }
+size_t ByteStream::bytes_written() const { return end_idx + 1; }
 
-size_t ByteStream::bytes_read() const { return {}; }
+size_t ByteStream::bytes_read() const { return start_idx; }
 
-size_t ByteStream::remaining_capacity() const { return {}; }
+size_t ByteStream::remaining_capacity() const { 
+    return pool.size() - buffer_size();
+}
