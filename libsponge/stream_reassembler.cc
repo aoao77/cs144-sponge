@@ -12,37 +12,60 @@ void DUMMY_CODE(Targs &&... /* unused */) {}
 
 using namespace std;
 
-StreamReassembler::StreamReassembler(const size_t capacity) : _output(capacity), _capacity(capacity) {
-    reassemble_vec.resize(capacity,'\0');
-    start_idx = 0;
-    end_idx = 0;
-    inorder_idx = 0;
+StreamReassembler::StreamReassembler(const size_t capacity) : _output(capacity), _capacity(capacity),reassemble_vec(_capacity),start_idx(0),end_idx(0),inorder_idx(0),eof_idx(SIZE_MAX){
+    printf("DEBUG reassem:capacity %ld\n",_capacity);
 }
 
 //! \details This function accepts a substring (aka a segment) of bytes,
 //! possibly out-of-order, from the logical stream, and assembles any newly
 //! contiguous substrings and writes them into the output stream in order.
 void StreamReassembler::push_substring(const string &data, const size_t index, const bool eof) {
-    for (size_t i = 0; i < data.size(); i++)
+    printf("DEBUG reassem:idx  %ld size %ld \n",index,data.size());
+    size_t data_idx;
+    // size_t read_start_idx = SIZE_MAX;
+    for (data_idx = 0; data_idx < data.size(); data_idx++)
     {
-        if ((index + i) >= inorder_idx && (index + i) < (start_idx + _capacity))
+        if ((index + data_idx) >= inorder_idx && (index + data_idx) < (start_idx + _capacity))
         {
-            reassemble_vec[(index + i) % _capacity] = data.at(i);
+            // read_start_idx = data_idx;
+            reassemble_vec[(index + data_idx) % _capacity] = data.at(data_idx);
         }
     }
     // update inorder_idx
-    size_t last_inorder_idx = inorder_idx;
+    string substr;
     for (size_t i = inorder_idx; i < start_idx + _capacity; i++)
     {
-        if (reassemble_vec[i % _capacity] != '\0')
+        if ((reassemble_vec[i % _capacity] != '\0')/*  || (read_start_idx != SIZE_MAX && reassemble_vec[i % _capacity]  == data.at(read_start_idx - index + i - inorder_idx)) */)
         {
             inorder_idx++;
+            substr.push_back(reassemble_vec[i % _capacity]);
+        }
+        else
+        {
+            printf("DEBUG reassem:break  idx %ld char %c \n",i,reassemble_vec[i % _capacity] );
+            break;
         }
     }
-    // eof
-    if((inorder_idx - last_inorder_idx) == data.size() && eof == true)
+    //write
+    _output.write(substr);
+    printf("DEBUG reassem:written num  %ld \n",_output.bytes_written());
+    // eof`
+    if(eof_idx == inorder_idx)
     {
-        _output.end_input();
+            _output.end_input();
+            printf("DEBUG reassem:inorder_idx  %ld eof_idx %ld \n",inorder_idx,eof_idx);
+    }
+    if (eof == true)
+    {
+        if((inorder_idx - index) == data.size())
+        {
+            _output.end_input();
+            printf("DEBUG reassem:inorder_idx \n");
+        }
+        else if ((index + data_idx) < (start_idx + _capacity)) {
+            printf("DEBUG reassem:eof %d\n",eof);
+            eof_idx = index + data_idx;
+        }
     }
 }
 
