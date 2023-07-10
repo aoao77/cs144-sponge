@@ -16,6 +16,7 @@ class StreamReassembler {
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
     std::vector<char> reassemble_vec;
+    std::vector<bool> written_vec;
     size_t start_idx;
     size_t end_idx;
     size_t inorder_idx;
