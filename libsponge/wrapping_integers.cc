@@ -14,8 +14,7 @@ using namespace std;
 //! \param n The input absolute 64-bit sequence number
 //! \param isn The initial sequence number
 WrappingInt32 wrap(uint64_t n, WrappingInt32 isn) {
-    DUMMY_CODE(n, isn);
-    return WrappingInt32{0};
+    return WrappingInt32{static_cast<uint32_t>((n + isn.raw_value()) % (1LU << 32))};
 }
 
 //! Transform a WrappingInt32 into an "absolute" 64-bit sequence number (zero-indexed)
@@ -29,6 +28,14 @@ WrappingInt32 wrap(uint64_t n, WrappingInt32 isn) {
 //! and the other stream runs from the remote TCPSender to the local TCPReceiver and
 //! has a different ISN.
 uint64_t unwrap(WrappingInt32 n, WrappingInt32 isn, uint64_t checkpoint) {
-    DUMMY_CODE(n, isn, checkpoint);
-    return {};
+    uint32_t absolu_diff = n.raw_value() > isn.raw_value() ? n - isn : (1LU << 32) - (isn - n);
+    if (absolu_diff > checkpoint) {
+        return absolu_diff;
+    }
+
+    uint32_t quotient = (checkpoint - absolu_diff) / (1LU << 32);
+    uint32_t remainder = (checkpoint - absolu_diff) % (1LU << 32);
+
+    return (remainder < (1LU << 32) / 2) ? (1LU << 32) * quotient + absolu_diff
+                                         : (1LU << 32) * (quotient + 1) + absolu_diff;
 }
