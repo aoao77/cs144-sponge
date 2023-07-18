@@ -28,6 +28,7 @@ WrappingInt32 wrap(uint64_t n, WrappingInt32 isn) {
 //! and the other stream runs from the remote TCPSender to the local TCPReceiver and
 //! has a different ISN.
 uint64_t unwrap(WrappingInt32 n, WrappingInt32 isn, uint64_t checkpoint) {
+    // printf("_syn_seq is %d  n_seq is %d written bytes is %ld   ",isn.raw_value(), n.raw_value() , checkpoint);
     uint32_t absolu_diff = n.raw_value() > isn.raw_value() ? n - isn : (1LU << 32) - (isn - n);
     if (absolu_diff > checkpoint) {
         return absolu_diff;
