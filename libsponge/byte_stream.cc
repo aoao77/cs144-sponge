@@ -65,7 +65,9 @@ void ByteStream::pop_output(const size_t len) {
 //! \returns a string
 std::string ByteStream::read(const size_t len) {
     string s;
-    if (len > buffer_size()) {
+    if (len == 0) {
+        return s;
+    } else if (len > buffer_size()) {
         set_error();
     } else {
         s = peek_output(len);

@@ -9,12 +9,33 @@
 #include <functional>
 #include <queue>
 
+#define MAX_TCP_UNIT 1452
+
 //! \brief The "sender" part of a TCP implementation.
 
 //! Accepts a ByteStream, divides it up into segments and sends the
 //! segments, keeps track of which segments are still in-flight,
 //! maintains the Retransmission Timer, and retransmits in-flight
 //! segments if the retransmission timer expires.
+class Timer {
+    TCPSegment _segment_time;
+    unsigned int _tick_time;
+    bool _retransed;
+
+  public:
+    Timer(TCPSegment _segment_time_in, unsigned int _tick_time_in)
+        : _segment_time(_segment_time_in), _tick_time(_tick_time_in), _retransed(false){};
+
+    unsigned int tick_time() { return _tick_time; }
+
+    void fly_tick_time(unsigned int time_in) { _tick_time -= time_in; }
+    void set_tick_time(unsigned int time_in) { _tick_time = time_in; }
+    void set_retransed(bool retransed) { _retransed = retransed; }
+    bool get_retransed() { return _retransed; }
+    TCPSegment &segment_time() { return _segment_time; }
+    const TCPSegment &segment_time() const { return _segment_time; }
+};
+
 class TCPSender {
   private:
     //! our initial sequence number, the number for our SYN.
@@ -31,6 +52,20 @@ class TCPSender {
 
     //! the (absolute) sequence number for the next byte to be sent
     uint64_t _next_seqno{0};
+
+    unsigned int _retransmission_timeout;
+
+    uint16_t _window_size;
+
+    uint64_t _ack_seq;
+
+    std::vector<Timer> _segments_time{};
+
+    unsigned int _consecutive_retransmission_cnt;
+
+    bool _fin;
+
+    bool _window_size_zero;
 
   public:
     //! Initialize a TCPSender
