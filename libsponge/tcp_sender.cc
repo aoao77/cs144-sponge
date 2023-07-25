@@ -81,7 +81,9 @@ void TCPSender::fill_window() {
 void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_size) {
     uint64_t ack_seq = unwrap(ackno, _isn, _next_seqno);
     bool ack_valid = false;
+    // new ack
     if (ack_seq > _ack_seq && ack_seq <= _next_seqno) {
+        // printf("seg time size %ld  \n",_segments_time.size());
         for (auto &&i : _segments_time) {
             auto seg = i.segment_time().header().seqno +
                        (i.segment_time().payload().size() + (i.segment_time().header().syn ? 1 : 0) +
@@ -91,37 +93,35 @@ void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
                 break;
             }
         }
-    }
 
-    if ((ack_valid == true) || ((_stream.buffer_size() > 0 || (_fin == false && true == _stream.input_ended())) &&
-                                ack_seq == _ack_seq && ack_seq + window_size > _next_seqno && ack_seq < _next_seqno)) {
-        bool restart = true;
-        if (ack_seq == _ack_seq) {
-            restart = false;
-        }
+        if (ack_valid == true) {
+            _ack_seq = ack_seq;
+            _window_size = window_size + ack_seq - _next_seqno;
+            _consecutive_retransmission_cnt = 0;
 
-        _ack_seq = ack_seq;
-        _window_size = window_size + ack_seq - _next_seqno;
-        _consecutive_retransmission_cnt = 0;
-
-        if (window_size == 0) {
-            _window_size = 1;
-            _window_size_zero = true;
-        } else {
-            _retransmission_timeout = _initial_retransmission_timeout;
-        }
-
-        for (auto it = _segments_time.begin(); it < _segments_time.end();) {
-            if (unwrap(it->segment_time().header().seqno, _isn, _next_seqno) < _ack_seq) {
-                it = _segments_time.erase(it);
+            if (window_size == 0) {
+                _window_size = 1;
+                _window_size_zero = true;
             } else {
-                if (restart == true) {
-                    it->set_tick_time(_retransmission_timeout);
-                }
+                _retransmission_timeout = _initial_retransmission_timeout;
+            }
 
-                it++;
+            for (auto it = _segments_time.begin(); it < _segments_time.end();) {
+                if (unwrap(it->segment_time().header().seqno, _isn, _next_seqno) < _ack_seq) {
+                    it = _segments_time.erase(it);
+                } else {
+                    it->set_tick_time(_retransmission_timeout);
+                    it++;
+                }
             }
         }
+    }
+    // same ack
+    else if (((_stream.buffer_size() > 0 || (_fin == false && true == _stream.input_ended())) && ack_seq == _ack_seq &&
+              ack_seq + window_size > _next_seqno && ack_seq < _next_seqno)) {
+        _window_size = window_size + ack_seq - _next_seqno;
+        _consecutive_retransmission_cnt = 0;
+        _retransmission_timeout = _initial_retransmission_timeout;
     }
 }
 
